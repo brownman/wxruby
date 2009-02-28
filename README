@@ -1,164 +1,198 @@
-README for wxRuby version 0.6.0 (BETA)
-   Released under the wxWidgets 3 license (see LICENSE)
-   This file last updated 2004-11-12
+= README for wxRuby version 2.0
 
+== Introduction
 
---------------------------------------------------------------------
-INTRODUCTION
+wxRuby is a cross-platform GUI library for Ruby, based on the wxWidgets
+GUI toolkit for C++. It uses native widgets wherever possible, providing
+the correct look, feel and behaviour to GUI applications on Windows, OS
+X and Linux/GTK. wxRuby aims to provide a comprehensive solution to
+developing professional-standard desktop applications in Ruby. 
 
-wxRuby is an extension library for the Ruby language that
-gives access to the wxWindows 2.4.x (also known as wxWidgets)
-cross-platform, native-widget, GUI toolkit. 
+== Installing wxRuby
 
-The wxRuby project website is:
-  http://rubyforge.org/projects/wxruby/
+wxRuby is distributed as pre-compiled binaries and source from the
+project's site on Rubyforge: http://wxruby.rubyforge.org/
 
-The wxWidgets project website is:
-  http://wxwidgets.org/
+For the majority of users, installation simply requires running 'gem
+install wxruby' on the command line. See INSTALL for further
+information.
 
+== wxRuby licence
 
---------------------------------------------------------------------
-REQUIREMENTS
+wxRuby is free and open-source. It is distributed under a liberal
+licence which is compatible with both free and commercial development.
+See LICENSE for more details.
 
-* Ruby 1.8.x (or 1.6.5+ on some platforms)
-* wxWindows 2.4.x (perhaps known as wxWidgets 2.4.x), without unicode
+== FAQ
 
-Primary development is under Debian GNU/Linux ("Sarge").
+=== What platforms and operating systems are supported in wxRuby2?
 
-It seems to work quite well under MS Windows native, and can also 
-be compiled with Cygwin. A Mac OS X version is also available.
+Currently the following are fully supported:
 
+* Windows NT/2000/XP/Vista (i686, MSVC and MingW)
+* OS X 10.4+ (i686 and PowerPc)
+* Linux (i686 + AMD-64)
 
+Support for other platforms is not being actively developed at present,
+but patches are welcome. It is likely to be much simpler to get wxRuby
+working on similar modern systems (eg FreeBSD or Solaris with GTK) than
+on legacy systems (eg Windows 98, Mac OS 9).
 
---------------------------------------------------------------------
-INSTALL FROM SOURCE
+=== Why would I choose wxruby over FXRuby, Ruby/GTK, Shoes etc?
+   
+There are several fine GUI toolkits available for Ruby, but we consider
+that wxRuby offers a combination of features that no other toolkit can match:
+   
+* Cross-platform (MS Windows, Mac OS X, Linux)
+* Real native widgets wherever possible
+* Provides a comprehensive selection of widgets and other GUI features
+* Useful non-GUI support classes, eg for Images and internationalisation
+* Simple licence that is compatible with proprietary and Free Software 
+* Mature and actively developed foundation in wxWidgets
+* Easy to install and redistribute
+   
+=== Why are native widgets important or helpful?
 
-From the src/ directory:
-	
-	> ruby extconf.rb
-	> make     [[[or nmake, depending on your platform]]]
-	> ruby install.rb
+The really important feature among the above is, for many people, native
+widgets. Several toolkits are to some degree able to simulate the native
+appearance of widgets, but wxRuby widgets are actually native widgets -
+so they behave and interact exactly according to the desktop's GUI
+conventions.
 
-Note that on some systems you may need to be root to do the 
-install step. As an alternative, you may be able to copy 
-wxruby.so to a directory that you have rights in, and include 
-that directory in the Ruby library search path. Hopefully 
-later we can describe that process in more detail in each 
-platform-specific README that has this issue.
+For one thing, this means that end-users do not have to adjust to a
+"foreign" interface. It ensures maximum compatibility with "assistive
+technology" such as screen readers for blind users.  It also allows apps
+to respect any themes the user may have chosen through their operating
+system. 
 
---------------------------------------------------------------------
-CONTENTS
+Desktop conventions go beyond widget appearance, to the labelling and
+positioning of items in standard dialogs and menus. wxRuby offers
+features to help with these too.
 
-The src/ directory contains all the C++ source code and headers. It 
-also contains .t files, which are templates that are processed by 
-wxpp.rb to generate .h and .cpp files. It is similar to SWIG, but 
-simpler, and specific to wxRuby.
+== Where can I ask a question, or report a bug?
 
-The samples/ directory contains many sample programs that show how 
-to use wxRuby. The samples are not well-organized yet, and they 
-do not use a consistent coding style. But they should help you 
-get started.
+The main mailing list for those using wxRuby for GUI development is
+wxruby-users. General questions and queries of all sorts are appropriate
+for this list, and new users are welcome.
 
+When asking a question, if something is not working as you expect,
+please provide a *minimal*, *runnable* sample of code that demonstrates
+the problem, and say what you expected to happen, and what actually
+happened. Please also provide basic details of your platform, ruby and
+wxruby version, and make a reasonable effort to find answers in the
+archive and documentation before posting. People on the list are happy
+to help, but it's too much to expect them to guess what you're trying to
+do, or try and debug 1,000 lines of your application.
 
---------------------------------------------------------------------
-DOCUMENTATION
+There is a bug-tracker and feature-request system on the rubyforge
+project pages for wxRuby. Using these helps ensure that a bug is
+followed through and resolved. You're strongly encouraged to post to
+these logged-in to rubyforge and not anonymously. You won't receive any
+requests for follow-up information on anonymous items, and so these can
+end up being closed without being resolved if needed information isn't
+supplied.
 
-Generally, the main wxWindows documentation will apply, with the 
-following changes:
+wxruby-development is a secondary mailing list for all those interested
+in the current and future development of wxRuby. The discussion on this
+list tends to deal more with the internals of the library.
 
-1. Classes are inside the Wx module, and class names do not 
-begin with Wx. So instead of WxWindow, you would refer to 
-Wx::Window.
+== How can I learn to use wxRuby?
 
-2. Method names are all lower case, with underlines. So instead 
-of calling SetWindowStyle, you would call set_window_style. 
-Instead of EVT_BUTTON it is evt_button.
+wxRuby is a large API and takes some time to learn. The wxRuby
+distribution comes with numerous samples which illustrate how to use
+many specific parts of the API. A good one to start with is the
+'minimal' sample, which provides an application skeleton. All the
+bundled samples are expected to work with current wxRuby 2.0, although
+some use a more modern coding style than others.
 
-3. Constants are all upper case, with underlines, regardless of 
-whether the original wxWindows constant was all caps or mixed 
-case.
+Complete wxRuby API documentation can downloaded separately; this tends
+to focus on how to use specific classes and methods, rather than on how
+to construct an application overall.
 
-4. Constants are inside the Wx module, and do not begin with 
-Wx. So instead of WXK_UP it is Wx::K_UP, instead of wxSUNKEN_BORDER 
-it is Wx::SUNKEN_BORDER, instead of wxNullColour it is 
-Wx::NULL_COLOUR, 
+There are also tutorials on the wiki, as well as on third-party
+websites. These typically provide in-depth view of a particular topic,
+but some may be out-of-date.
 
+One of the advantages of wxRuby is the much larger ecosystem of
+wxWidgets and wxPython resources out there. There is a book for
+wxWidgets,"Cross-Platform Programming in wxWidgets", whcih can be freely
+downloaded as a PDF. This provides very comprehensive coverage of the
+wxWidgets API in C++. The code may not be directly useful, but the
+descriptions of how widgets and events and so forth work are almost
+always relevant to wxRuby.
 
-To handle an event, you use one of the evt_xxx methods, but 
-instead of passing a function, you provide a block. Generally, 
-it is best to simply delegate the handling to some other method, 
-which may or may not want the event itself. For example:
+When using a search engine to find answers about a wxRuby class, it can
+be worth searching for the same term but with 'wx' prepended. For
+example, if you wanted answers about the "Grid" class, try searching for
+"wxGrid" as this will turn up results relating to wxWidgets and wxPython
+which may be relevant.
 
-    evt_char {|event| onChar(event)}
-    evt_menu(Calendar_File_Quit) {onQuit}
+== What wxWidgets features are supported by wxRuby?
 
+wxRuby supports almost all of the wxWidgets 2.8.9 GUI API, around 300
+classes in total. wxWidgets classes that provide general programming
+support features, such as strings, networking, threading and database
+access are not and will never be ported, as it's assumed that in all
+these cases it's preferable to use a Ruby library.
 
---------------------------------------------------------------------
-PLATFORM-SPECIFIC ISSUES
+If you know of a feature in wxWidgets that you would like to see
+supported in wxRuby
 
-Please see the other README files for problems, suggestions, and 
-other information for specific platforms:
+== How does wxRuby 2.0 relate to the wxruby 0.6.0 release?
 
-  README.linux
-  README.osx
-  README.mingw
-  README.mswin
-  
-We have not yet attempted or heard reports of attempted builds with 
-other compilers (such as Borland), or other platforms.
+wxRuby 0.6.0 was the last in a series of releases developed using a
+different approach in the early days of wxRuby. Work on this series
+stopped in early 2005, in favour of what is now wxRuby 2.0. Several
+years of development have gone into wxRuby since, making it vastly more
+capable and correct than the 0.6.0 release, which is only offered for
+legacy applications. 
 
---------------------------------------------------------------------
-KNOWN PROBLEMS
+== I am getting an error trying to install or compile wxRuby
 
-* NOTE: The following classes have known problems that may cause 
-  crashes if you use set_client_data and/or get_client_data: 
-    Choice, ComboBox, CommandEvent, SocketEvent, EvtHandler,
-    ListBox, Socket
+Please double-check the INSTALL documents, and search the mailing list
+archives. If this doesn't help, please post your question on the wxruby
+mailing list (http://wxruby.rubyforge.org/wiki/wiki.pl?MailingLists)
 
-* NOTE: The following classes have known problems that may cause 
-  crashes if you use these methods:
-  - Event (get_event_object)
-  - ListCtrl (on_get_item_attr, on_get_item_image, on_get_item_text)
-  - TreeCtrl (on_compare_items)
+= Credits 
 
-* Not all classes and methods have been implemented yet.
+Kevin Smith established the wxRuby 2.0 project using SWIG in 2005. Since
+then it has benefitted from the input of dozens of volunteers, who have
+contributed code, documentation, testing, bug reports and feature
+requests. 
 
-* Certain features do not manage memory correctly, and may 
-crash during garbage collection. One example is ClientData 
-in listboxes and choices. These will be fixed soon. 
+The alphabetic list shows (some of) those who've contributed code to
+wxRuby 2.0.
 
-* Many objects that get created will never be freed, so it 
-is likely that any app that runs for a long time will use 
-up a ton of memory.
+Albin Holmgren
+Alex Fenton
+Artur Kuptel
+Cezar Espinola
+Chauk-Mean Proum
+Christophe Bludau
+Curt Hibbs
+Dale Edmons
+Daniel Savarese
+David Whetstone
+Dirk Traulsen
+Hawley Waldman
+Jani Monoses
+Joe Seeley
+Jonathan Maasland
+Kevin Smith
+Mario Steele
+Nic
+Pascal Hurni
+Robert Carlin
+Roy Sutton
+Ryuichi Sakamoto
+Sean Lindsay
+Sean Long
+Tobias Gruetzmacher
+Zach Dennis
 
-* The samples generally work, but they are not written in 
-a recommended style. Also, a few of them have a couple 
-features that are not implemented or do not work correctly.
+If your name is missing and should be here, please get in touch
+with the current development team.
 
-* We have almost no documentation yet.
+== Lead Maintainer
 
-* wxRuby is not yet compatible with unicode versions of 
-wxWidgets. This will definitely be fixed as soon as is 
-practical.
-
-
-
---------------------------------------------------------------------
-CREDITS
-
-Current maintainer: Kevin Smith
-  e-mail: <wxruby@qualitycode.com> (but please send questions to the 
-  wxruby mailing list, because you will get a faster answer, and 
-  everyone can benefit!)
-  
-Original author: Park Heesob
-
-Thanks also to other folks who have contributed in many ways to 
-this project, including (in no particular order):
- Curt Hibbs, Rich Kilmer, Gergely Kontra, Nick, Gour,
- Nobuaki Arima, Roy Varghese, John Platte, Alan Chen,
- Robert P. Carlin, Gerard A.W. Vreeswijk, 
- and everyone who has posted to the mailing list or sent feedback.
- (NOTE: This list is now out of date. I will try to update it 
- in the next version to recognize several recent contributors)
---------------------------------------------------------------------
+Alex Fenton: alex at pressure dot to

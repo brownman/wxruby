@@ -1,60 +1,77 @@
+#!/usr/bin/env ruby
+# wxRuby2 Sample Code. Copyright (c) 2004-2008 wxRuby development team
+# Freely reusable code: see SAMPLES-LICENSE.TXT for details
+begin
+  require 'rubygems' 
+rescue LoadError
+end
+require 'wx'
 
-require 'wxruby'
-include Wx
+# This sample shows a fairly minimal Wx::App using a Frame, with a
+# MenuBar and StatusBar but no controls. For the absolute minimum app,
+# see nothing.rb
 
+# A Wx::Frame is a self-contained, top-level Window that can contain
+# controls, menubars, and statusbars
+class MinimalFrame < Wx::Frame
+  def initialize(title)
+    # The main application frame has no parent (nil)
+    super(nil, :title => title, :size => [ 400, 300 ])
 
-Minimal_Quit = 1
-Minimal_About = ID_ABOUT
+    # Give the frame an icon. PNG is a good choice of format for
+    # cross-platform images. Note that OS X doesn't have "Frame" icons.
+    icon_file = File.join( File.dirname(__FILE__), "mondrian.png")
+    self.icon = Wx::Icon.new(icon_file)
 
+    menu_bar = Wx::MenuBar.new
+    # The "file" menu
+    menu_file = Wx::Menu.new
+    # Using Wx::ID_EXIT standard id means the menu item will be given
+    # the right label for the platform and language, and placed in the
+    # correct platform-specific menu - eg on OS X, in the Application's menu
+    menu_file.append(Wx::ID_EXIT, "E&xit\tAlt-X", "Quit this program")
+    menu_bar.append(menu_file, "&File")
 
-class MyFrame < Frame
-  def initialize(title,pos,size,style=DEFAULT_FRAME_STYLE)
-    super(nil,-1,title,pos,size,style)
+    # The "help" menu
+    menu_help = Wx::Menu.new
+    menu_help.append(Wx::ID_ABOUT, "&About...\tF1", "Show about dialog")
+    menu_bar.append(menu_help, "&Help")
 
-    if RUBY_PLATFORM == "WXMSW"
-      set_icon(Icon.new("mondrian.ico",BITMAP_TYPE_ICO))
-    else
-      set_icon(Icon.new("mondrian.xpm",BITMAP_TYPE_XPM))
-    end
+    # Assign the menubar to this frame
+    self.menu_bar = menu_bar
 
-    menuFile = Menu.new
-    helpMenu = Menu.new
-    helpMenu.append(Minimal_About, "&About...\tF1", "Show about dialog")
-    menuFile.append(Minimal_Quit, "E&xit\tAlt-X", "Quit this program")
-    menuBar = MenuBar.new
-    menuBar.append(menuFile, "&File")
-    menuBar.append(helpMenu, "&Help")
-    set_menu_bar(menuBar)
-
+    # Create a status bar at the bottom of the frame
     create_status_bar(2)
-    set_status_text("Welcome to wxRuby!")
+    self.status_text = "Welcome to wxRuby!"
 
-    evt_menu(Minimal_Quit) {onQuit}
-    evt_menu(Minimal_About) {onAbout}
-
+    # Set it up to handle menu events using the relevant methods. 
+    evt_menu Wx::ID_EXIT, :on_quit
+    evt_menu Wx::ID_ABOUT, :on_about
   end
 
-  def onQuit
-    close(TRUE)
+  # End the application; it should finish automatically when the last
+  # window is closed.
+  def on_quit
+    close()
   end
 
-  def onAbout
-    msg =  sprintf("This is the About dialog of the minimal sample.\n" \
-    		   "Welcome to %s", VERSION_STRING)
-
-    message_box(msg, "About Minimal", OK | ICON_INFORMATION, self)
-
-  end
-end
-
-class RbApp < App
-  def on_init
-    frame = MyFrame.new("Minimal wxRuby App",Point.new(50, 50), Size.new(450, 340))
-
-    frame.show(TRUE)
-
+  # show an 'About' dialog - WxRuby's about_box function will show a
+  # platform-native 'About' dialog, but you could also use an ordinary
+  # Wx::MessageDialog here.
+  def on_about
+    Wx::about_box(:name => self.title,
+                   :version     => Wx::WXRUBY_VERSION,
+                   :description => "This is the minimal sample",
+                   :developers  => ['The wxRuby Development Team'] )
   end
 end
 
-a = RbApp.new
-a.main_loop()
+# Wx::App is the container class for any wxruby app. To start an
+# application, either define a subclass of Wx::App, create an instance,
+# and call its main_loop method, OR, simply call the Wx::App.run class
+# method, as shown here.
+Wx::App.run do 
+  self.app_name = 'Minimal'
+  frame = MinimalFrame.new("Minimal wxRuby App")
+  frame.show
+end

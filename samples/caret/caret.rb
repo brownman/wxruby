@@ -1,10 +1,16 @@
+#!/usr/bin/env ruby
+# wxRuby2 Sample Code. Copyright (c) 2004-2008 wxRuby development team
+# Freely reusable code: see SAMPLES-LICENSE.TXT for details
+begin
+  require 'rubygems' 
+rescue LoadError
+end
+require 'wx'
 
-require 'wxruby'
+
 include Wx
 
 # menu items
-Caret_Quit = 1
-Caret_About = 2
 Caret_set_blink_time = 3
 Caret_Move = 4
 
@@ -14,278 +20,263 @@ Caret_Text = 1000
 
 # MyCanvas is a canvas on which you can type
 class MyCanvas < ScrolledWindow
+  def initialize(parent)
+    super(parent, :style => SUNKEN_BORDER)
 
-    def initialize(parent)
-        super(parent, -1,
-                DEFAULT_POSITION, DEFAULT_SIZE,
-                SUNKEN_BORDER )
+    self.background_colour = WHITE
 
-        set_background_colour(WHITE)
+    @font = Font.new(12, FONTFAMILY_TELETYPE,
+                     FONTSTYLE_NORMAL, FONTWEIGHT_NORMAL)
 
-        @m_font = Font.new(12, FONTFAMILY_TELETYPE,
-                        FONTSTYLE_NORMAL, FONTWEIGHT_NORMAL)
+    @x_caret = @y_caret = @x_chars = @y_chars = 0
+    @x_margin = @y_margin = 5
+    @text = nil
 
-        @m_xCaret = @m_yCaret =
-        @m_xChars = @m_yChars = 0
+    create_caret
 
-        @m_xMargin = @m_yMargin = 5
-        @m_text = nil
+    evt_paint :on_paint
+    evt_size :on_size
+    evt_char :on_char
+  end
 
-        CreateCaret()
+  def [](x,y)
+    @text[x + @x_chars * y,1]
+  end
 
-        evt_paint {onPaint}
-        evt_size {|event| onSize(event)}
-        evt_char {|event| onChar(event)}
+  def []=(x,y,z)
+    @text[x + @x_chars * y,1] = z
+  end
+
+  # caret movement
+  def home_pos
+    @x_caret = 0
+  end
+
+  def end_pos
+    @x_caret = @x_chars - 1
+  end
+
+  def first_line
+    @y_caret = 0
+  end
+
+  def last_line
+    @y_caret = @y_chars - 1
+  end
+
+  def prev_char
+    if @x_caret == 0
+      end_pos
+      prev_line
+    else
+      @x_caret -= 1
+    end
+  end
+
+  def next_char
+    @x_caret += 1
+    if @x_caret == @x_chars
+      home_pos
+      next_line
+    end
+  end
+
+  def prev_line
+    if @y_caret == 0
+      last_line
+    else
+      @y_caret -= 1
+    end
+  end
+
+  def next_line
+    @y_caret += 1
+    if @y_caret == @y_chars
+      first_line
+    end
+  end
+
+  def create_caret
+    paint do | dc |
+      dc.font = @font
+      @height_char = dc.char_height
+      @width_char = dc.char_width
+
+      my_caret = Caret.new(self, Size.new(@width_char, @height_char))
+      self.caret = my_caret
+
+      caret.move [ @x_margin, @y_margin ]
+      caret.show
+    end
+  end
+
+  def move_caret(x,y)
+    @x_caret = x
+    @y_caret = y
+
+    do_move_caret
+  end
+
+  def do_move_caret
+    log_status("Caret is at (%d, %d)", @x_caret, @y_caret)
+
+    caret.move_xy( @x_margin + @x_caret * @width_char,
+                   @y_margin + @y_caret * @height_char)
+  end
+
+  def on_size(event)
+    @x_chars = (event.size.x - 2 * @x_margin) / @width_char
+    @y_chars = (event.size.y - 2 * @y_margin) / @height_char
+    if @x_chars <= 0
+      @x_chars = 1
+    end
+    if @y_chars <= 0
+      @y_chars = 1
+    end
+    if @x_caret >= @x_chars
+      @x_caret = @x_chars-1
+    end
+    if @y_caret >= @y_chars
+      @y_caret = @y_chars-1
     end
 
-    def [](x,y)
-        @m_text[x + @m_xChars * y,1]
+    @text = " " * @x_chars * @y_chars
+
+    if parent && parent.status_bar
+      msg = sprintf("Panel size is (%d, %d)", @x_chars, @y_chars)
+      parent.set_status_text(msg, 1)
+      parent.refresh
+    end
+    event.skip
+  end
+
+  def on_paint
+    if caret
+      caret.hide
     end
 
-    def []=(x,y,z)
-        @m_text[x + @m_xChars * y,1] = z
+    paint do | dc |
+      dc.clear
+      dc.set_font(@font)
+
+      for y in 0 ... @y_chars
+        line = @text[@x_chars * y,@x_chars]
+        dc.draw_text( line, @x_margin, @y_margin + y * @height_char )
+      end
     end
 
-    # caret movement
-    def Home()
-        @m_xCaret = 0
+    if caret
+      caret.show
     end
+  end
 
-    def End()
-        @m_xCaret = @m_xChars - 1
+  def on_char(event)
+    case event.key_code
+    when K_LEFT, K_BACK
+      prev_char
+    when K_RIGHT
+      next_char
+    when K_UP
+      prev_line
+    when K_DOWN
+      next_line
+    when K_HOME
+      home_pos
+    when K_END
+      end_pos
+    when K_RETURN
+      home_pos
+      next_line
+    else
+      ch = event.key_code
+      if !event.alt_down and (ch >= K_SPACE) and (ch < K_DELETE)
+        self[@x_caret, @y_caret] = ch.chr
+        refresh
+        next_char
+      else
+        event.skip
+      end
     end
-
-    def FirstLine()
-        @m_yCaret = 0
-    end
-
-    def LastLine()
-        @m_yCaret = @m_yChars - 1
-    end
-
-    def PrevChar()
-        if @m_xCaret == 0
-          End()
-          PrevLine()
-        else
-          @m_xCaret -= 1
-        end
-    end
-
-    def NextChar()
-        @m_xCaret += 1
-        if @m_xCaret == @m_xChars
-            Home()
-            NextLine()
-        end
-    end
-
-    def PrevLine()
-        if @m_yCaret == 0
-            LastLine()
-        else
-            @m_yCaret -= 1
-        end
-    end
-
-    def NextLine()
-        @m_yCaret += 1
-        if @m_yCaret == @m_yChars
-            FirstLine()
-        end
-    end
-
-    def CreateCaret()
-        dc = ClientDC.new(self)
-        dc.set_font(@m_font)
-        @m_heightChar = dc.get_char_height()
-        @m_widthChar = dc.get_char_width()
-
-        caret = Caret.new(self, Size.new(@m_widthChar, @m_heightChar))
-        set_caret(caret)
-
-        caret.move(Point.new(@m_xMargin, @m_yMargin))
-        caret.show()
-    end
-
-    def MoveCaret(x,y)
-        @m_xCaret = x
-        @m_yCaret = y
-
-        DoMoveCaret()
-    end
-
-    def DoMoveCaret()
-        log_status("Caret is at (%d, %d)", @m_xCaret, @m_yCaret)
-
-        get_caret().move_xy(@m_xMargin + @m_xCaret * @m_widthChar,
-                         @m_yMargin + @m_yCaret * @m_heightChar)
-    end
-
-    def onSize(event)
-        @m_xChars = (event.get_size().x - 2*@m_xMargin) / @m_widthChar
-        @m_yChars = (event.get_size().y - 2*@m_yMargin) / @m_heightChar
-        if @m_xChars == 0
-            @m_xChars = 1
-        end
-        if @m_yChars == 0
-            @m_yChars = 1
-        end
-
-        @m_text = " " * @m_xChars * @m_yChars
-
-        frame = get_parent()
-        if frame && frame.get_status_bar()
-            msg = sprintf("Panel size is (%d, %d)", @m_xChars, @m_yChars)
-            frame.set_status_text(msg, 1)
-        end
-        event.skip()
-    end
-
-    def onPaint
-        m_caret = get_caret()
-        if m_caret
-            m_caret.hide()
-        end
-
-        dc = PaintDC.new(self)
-        prepare_dc(dc)
-        dc.clear()
-
-        dc.set_font(@m_font)
-
-        for y in 0 ... @m_yChars
-            line = @m_text[@m_xChars * y,@m_xChars]
-            dc.draw_text( line, @m_xMargin, @m_yMargin + y * @m_heightChar )
-        end
-
-        dc.free
-
-        if m_caret
-            m_caret.show()
-        end
-
-    end
-
-    def onChar(event)
-        case event.key_code()
-            when K_LEFT
-                PrevChar()
-            when K_RIGHT
-                NextChar()
-            when K_UP
-                PrevLine()
-            when K_DOWN
-                NextLine()
-            when K_HOME
-                Home()
-            when K_END
-                End()
-            when K_RETURN
-                Home()
-                NextLine()
-            else
-                if !event.alt_down()
-                    ch = event.key_code()
-                    self[@m_xCaret, @m_yCaret] = ch.chr
-
-                    m_caret = get_caret()
-                    if m_caret
-                        m_caret.hide()
-                    end
-
-                    dc = ClientDC.new(self)
-                    dc.set_font(@m_font)
-                    dc.set_background_mode(SOLID) # overwrite old value
-                    dc.draw_text(ch.chr, @m_xMargin + @m_xCaret * @m_widthChar,
-                                    @m_yMargin + @m_yCaret * @m_heightChar )
-                    dc.free
-
-                    NextChar()
-                    if m_caret
-                        m_caret.show()
-                    end
-                else
-                    event.skip()
-                end
-        end
-        DoMoveCaret()
-    end
-
+    do_move_caret
+  end
 end
 
 class MyFrame < Frame
-    def initialize(title,pos,size)
-        super(nil, -1, title, pos, size)
-        # set the frame icon
-        set_icon(Icon.new("mondrian.xpm",BITMAP_TYPE_XPM))
+  def initialize(title, pos, size)
+    super(nil, -1, title, pos, size)
+    # set the frame icon
+    icon_file = File.join(File.dirname(__FILE__), 'mondrian.xpm')
+    self.icon = Icon.new(icon_file, BITMAP_TYPE_XPM)
 
-        # create a menu bar
-        menuFile = Menu.new
+    # create a menu bar
+    menu_file = Menu.new
 
-        menuFile.append(Caret_set_blink_time, "&Blink time...\tCtrl-B")
-        menuFile.append(Caret_Move, "&Move caret\tCtrl-C")
-        menuFile.append_separator()
-        menuFile.append(Caret_About, "&About...\tCtrl-A", "Show about dialog")
-        menuFile.append_separator()
-        menuFile.append(Caret_Quit, "E&xit\tAlt-X", "Quit self program")
+    menu_file.append(Caret_set_blink_time, "&Blink time...\tCtrl-B")
+    menu_file.append(Caret_Move, "&Move caret\tCtrl-C")
+    menu_file.append_separator
+    menu_file.append(Wx::ID_ABOUT, "&About...\tCtrl-A", "Show about dialog")
+    menu_file.append_separator
+    menu_file.append(Wx::ID_EXIT, "E&xit\tAlt-X", "Quit self program")
 
-        # now append the freshly created menu to the menu bar...
-        menuBar = MenuBar.new
-        menuBar.append(menuFile, "&File")
+    # now append the freshly created menu to the menu bar...
+    menu_bar = MenuBar.new
+    menu_bar.append(menu_file, "&File")
 
-        # ... and attach self menu bar to the frame
-        set_menu_bar(menuBar)
+    # ... and attach self menu bar to the frame
+    self.menu_bar = menu_bar
 
-        @m_canvas = MyCanvas.new(self)
+    @canvas = MyCanvas.new(self)
 
-        # create a status bar just for fun (by default with 1 pane only)
-        create_status_bar(2)
-        set_status_text("Welcome to Windows!")
+    # This is required to set focus so that key events are directed to
+    # this Window, on Linux/GTK in particular 
+    @canvas.set_focus
 
-        evt_menu(Caret_Quit) {onQuit}
-        evt_menu(Caret_About) {onAbout}
-        evt_menu(Caret_set_blink_time) {onSet_blink_time}
-        evt_menu(Caret_Move) {onCaretMove}
+    # create a status bar just for fun (by default with 1 pane only)
+    create_status_bar(2)
+    self.status_text = "Welcome to Windows!"
 
+    evt_menu Wx::ID_EXIT, :on_quit
+    evt_menu Wx::ID_ABOUT, :on_about
+    evt_menu Caret_set_blink_time, :on_set_blink_time
+    evt_menu Caret_Move, :on_caret_move
+  end
+  
+  def on_quit
+    # true is to force the frame to close
+    close(true)
+  end
+
+  def on_about
+    message_box("The caret Windows sample, adapted for WxRuby",
+                "About Caret", OK | ICON_INFORMATION, self)
+  end
+
+  def on_caret_move
+    @canvas.move_caret(10, 10)
+  end
+
+  def on_set_blink_time
+    blink_time = get_number_from_user(
+                   "The caret blink time is the time between two blinks",
+                   "Time in milliseconds:",
+                   "Caret sample",
+                   Caret::get_blink_time, 0, 10000,
+                   self)
+    if blink_time != -1
+      Caret::set_blink_time(blink_time)
+      @canvas.create_caret
+      log_status(self,"Blink time set to %d milliseconds.", blink_time)
     end
-
-    def onQuit
-        # TRUE is to force the frame to close
-        close(TRUE)
-    end
-
-    def onAbout
-        message_box("The caret Windows sample.\n© 1999 Vadim Zeitlin",
-                 "About Caret", OK | ICON_INFORMATION, self)
-    end
-
-    def onCaretMove
-        @m_canvas.MoveCaret(10, 10)
-    end
-
-    def onSet_blink_time
-
-        blinkTime = get_number_from_user(
-                      "The caret blink time is the time between two blinks",
-                      "Time in milliseconds:",
-                      "Caret sample",
-                      Caret::get_blink_time(), 0, 10000,
-                      self)
-        if blinkTime != -1
-            Caret::set_blink_time(blinkTime)
-            @m_canvas.CreateCaret()
-            log_status(self,"Blink time set to %d milliseconds.", blinkTime)
-        end
-    end
+  end
 end
 
-class RbApp < App
-    def on_init()    
-  	    frame = MyFrame.new("Caret Windows sample", Point.new(50, 50), Size.new(450, 340))
-	    frame.show(TRUE)
-    end
+class CaretApp < App
+  def on_init    
+    frame = MyFrame.new("Caret Windows sample", 
+                        Point.new(50, 50), Size.new(450, 340))
+    frame.show(true)
+  end
 end
 
-a = RbApp.new
-a.main_loop()
+a = CaretApp.new
+a.main_loop
