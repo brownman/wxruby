@@ -35,16 +35,15 @@ require "rbconfig"
 
 $ruby_cppflags = Config::CONFIG["CFLAGS"]
 
-# Ruby 1.9.0 changes location of some header files
-if RUBY_VERSION >= "1.9.0"
-  includes = [ Config::CONFIG["rubyhdrdir"],
-               Config::CONFIG["sitehdrdir"],
-               Config::CONFIG["vendorhdrdir"],
-               File.join(Config::CONFIG["rubyhdrdir"], 
-                         Config::CONFIG['arch']) ]
-  $ruby_includes = " -I. -I " + includes.join(' -I ')
-else
-  $ruby_includes = " -I. -I " + Config::CONFIG["archdir"]
+# Setup include paths.
+$ruby_includes = " -I. "
+%w[ archdir rubyhdrdir sitehdrdir vendorhdrdir].each do |entry|
+  if dir = Config::CONFIG[entry]
+    $ruby_includes << " -I#{dir}"
+
+    arch = File.join dir, Config::CONFIG['arch']
+    $ruby_includes << " -I#{arch}" if File.exists? arch
+  end
 end
 
 $ruby_ldflags = Config::CONFIG["LDFLAGS"]
