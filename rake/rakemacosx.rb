@@ -30,7 +30,7 @@ $extra_cppflags = '-x objective-c++ -isysroot /Developer/SDKs/MacOSX10.4u.sdk -m
 # If release build, remove debugging info; if debug build, ensure
 # debugging info and remove optimisations
 if $release_build
-  $ruby_cppflags.sub!(/-g/, '')
+  $ruby_cppflags.sub!(/-g([^ ]*)?/, '')
 elsif $debug_build
   $extra_cppflags << ' -g'
   $ruby_cppflags.sub!(/-Os/, '')
