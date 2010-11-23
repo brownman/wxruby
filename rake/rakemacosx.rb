@@ -24,9 +24,8 @@ if ENV['WXRUBY_OSX_NO_UNIVERSAL']
   $osx_universal = false
 end
 
-# Minimum system supported is 10.4.x, this is the minimum supported by
-# wxWidgets as of 01/15/2008
-$extra_cppflags = '-x objective-c++ -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4'
+# Minimum system supported is 10.5.x. Perhaps add env vars for 10.4?
+$extra_cppflags = '-x objective-c++ -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5'
 # If release build, remove debugging info; if debug build, ensure
 # debugging info and remove optimisations
 if $release_build
