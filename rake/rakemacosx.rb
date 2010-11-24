@@ -35,7 +35,7 @@ elsif $debug_build
   $ruby_cppflags.sub!(/-Os/, '')
 end
 
-$extra_ldflags = '-dynamic -bundle -flat_namespace -undefined suppress -isysroot /Developer/SDKs/MacOSX10.4u.sdk -mmacosx-version-min=10.4'
+$extra_ldflags = '-dynamic -bundle -flat_namespace -undefined suppress -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5'
 
 if $osx_universal
   $extra_cppflags << ' -arch ppc -arch i386'
